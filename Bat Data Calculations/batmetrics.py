@@ -122,7 +122,16 @@ euler = r.as_euler('xyz', degrees=True)
 
 #Euler degrees to radians
 euler_rad = np.deg2rad(euler)
+print(euler_rad)
+#Time
+time = np.arange(696)
+dt = time[1:] - time[:-1]
 
+
+#Angular Velocity
+angular_velocity = (euler_rad[2:] - euler_rad[:-2]) / (2*dt)
+angular_velocity = np.insert(angular_velocity, 0, (euler_rad[1]) - (euler_rad[0]) / dt[0], axis 0)
+angular_velocity = np.append(angular_velocity, [(euler_rad[-1]) - (euler_rad[-2]) / dt[-1]], axis 0)
 
 
 #Figuring out global axis
