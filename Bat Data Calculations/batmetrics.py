@@ -13,11 +13,9 @@ columns = ['Index',
            'x-virtual marker end', 'y-virtual marker end', 'z-virtual marker end',
            'x-virtual marker center', 'y-virtual marker center', 'z-virtual marker center']
 # Read txt file and organize columns
-df = pd.read_csv('Bat_Data.csv', delimiter="\t", skiprows=3, names=columns)
+df = pd.read_csv('Bat Data Calculations/Bat_Data.csv', delimiter="\t", skiprows=3, names=columns)
 
-df.to_csv(r'C:\Users\OSUsp\PycharmProjects\pythonProject\Bat_Data.csv', index=None)
-
-df3 = pd.read_csv('Bat_Data.csv')
+#df.to_csv(r"Bat Data Calculations/Bat_Data.csv", index=None)
 
 # Bat Tip Linear Velocity:
 
@@ -110,17 +108,21 @@ dfi = pd.DataFrame(i_array, columns=['i_x','i_y','i_z'])
 dfj = pd.DataFrame(j_array, columns=['j_x','j_y','j_z'])
 dfk = pd.DataFrame(k_array, columns=['k_x','k_y','k_z'])
 
+df3 = pd.DataFrame()
 df3 = pd.concat([dfi, dfj, dfk], axis=1)
 
 #Convert df3 to Rotation Matrices
 
 rotationmatrix = np.array(df3)
 rmatrix = rotationmatrix.reshape((696,3,3))
-print(rmatrix)
 
 #Rotation matrix to euler angles
 r = R.from_matrix(rmatrix)
 euler = r.as_euler('xyz', degrees=True)
+
+#Euler degrees to radians
+euler_rad = np.deg2rad(euler)
+
 
 
 #Figuring out global axis
