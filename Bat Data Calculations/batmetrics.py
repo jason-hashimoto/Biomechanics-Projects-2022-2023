@@ -14,7 +14,7 @@ columns = ['Index',
            'x-virtual marker end', 'y-virtual marker end', 'z-virtual marker end',
            'x-virtual marker center', 'y-virtual marker center', 'z-virtual marker center']
 # Read txt file and organize columns
-df = pd.read_csv('C:/Users/OSUsp/Documents/GitHub/Biomechanics-Projects-2022-2023/Bat Data Calculations/Bat_Data.csv', delimiter="\t", skiprows=3, names=columns)
+df = pd.read_csv('/workspaces/Biomechanics-Projects-2022-2023/Bat Data Calculations/Bat_Data.csv', delimiter="\t", skiprows=3, names=columns)
 
 #Figuring out global axis
 
@@ -29,53 +29,49 @@ ax.legend()
 ax.set_zlim(zmin=0)
 #plt.show()
 
-# Bat Tip Linear Velocity:
+# Bat Tip Linear Velocity
+
+df_velo = pd.DataFrame()
 
 # We will need at linear time constant in frames per second, which is 480fps in this case
 linear_time_constant = 1 / 480
 
 # x linear velo calculation
 
-x_bat_top_cap_velo = df[['x-bat top cap']].diff() / 1000 / linear_time_constant
-
-# adding velo calculation to dataframe
-df['x bat top cap velo'] = x_bat_top_cap_velo
+df_velo['x_bat_top_cap_velo'] = df[['x-bat top cap']].diff() / 1000 / linear_time_constant
 
 # y linear velo calculation - same as x with y values
 
-y_bat_top_cap_velo = df[['y-bat top cap']].diff() / 1000 / linear_time_constant
-df['y bat top cap velo'] = y_bat_top_cap_velo
+df_velo['y_bat_top_cap_velo'] = df[['y-bat top cap']].diff() / 1000 / linear_time_constant
 
 # y linear velo calculation - same as x and y with z values
 
-z_bat_top_cap_velo = df[['z-bat top cap']].diff() / 1000 / linear_time_constant
-df['z bat top cap velo'] = z_bat_top_cap_velo
+df_velo['z_bat_top_cap_velo'] = df[['z-bat top cap']].diff() / 1000 / linear_time_constant
 
 # velocity magnitude
 
-velocity_squared = (df['x bat top cap velo'] ** 2 + df['y bat top cap velo'] ** 2 + df['z bat top cap velo'] ** 2)
-df['velocity mag'] = (velocity_squared ** (1 / 2))
+velocity_squared = (df_velo['x_bat_top_cap_velo'] ** 2 + df_velo['y_bat_top_cap_velo'] ** 2 + df_velo['z_bat_top_cap_velo'] ** 2)
+df_velo['velocity mag'] = (velocity_squared ** (1 / 2))
 
-# x linear acceleration calculation
+#Bat Tip Linear Acceleration 
 
-# finding the difference between velocities
+df_acc = pd.DataFrame()
 
-x_bat_top_cap_acc = df['x bat top cap velo'].diff() / linear_time_constant
-df['x bat top cap acc'] = x_bat_top_cap_acc
+# x linear acceleration calculation, finding the difference between velocities
+
+df_acc['x_bat_top_cap_acc'] = df_velo['x_bat_top_cap_velo'].diff() / linear_time_constant
 
 # y linear acc calculation - same as x with y values
 
-y_bat_top_cap_acc = df['y bat top cap velo'].diff() / linear_time_constant
-df['y bat top cap acc'] = y_bat_top_cap_acc
+df_acc['y_bat_top_cap_acc'] = df_velo['y_bat_top_cap_velo'].diff() / linear_time_constant
 
 # z linear acc calculation - same as x and y with z values
 
-z_bat_top_cap_acc = df['z bat top cap velo'].diff() / linear_time_constant
-df['z bat top cap acc'] = z_bat_top_cap_acc
+df_acc['z_bat_top_cap_acc'] = df_velo['z_bat_top_cap_velo'].diff() / linear_time_constant
 
 # acceleration magnitude calculation
-acceleration_squared = (df['x bat top cap acc'] ** 2 + df['y bat top cap acc'] ** 2 + df['z bat top cap acc'] ** 2)
-df['acceleration mag'] = (acceleration_squared ** (1 / 2))
+acceleration_squared = (df_acc['x_bat_top_cap_acc'] ** 2 + df_acc['y_bat_top_cap_acc'] ** 2 + df_acc['z_bat_top_cap_acc'] ** 2)
+df_acc['acceleration mag'] = (acceleration_squared ** (1 / 2))
 
 # Euler angles
 
@@ -133,9 +129,7 @@ r = R.from_matrix(rmatrix)
 euler = r.as_euler('xyz', degrees=True)
 
 #Display euler angles
-df4 = pd.DataFrame(euler, columns=['x','y','z'])
-#df4['z'].plot(kind='line')
-#plt.show()
+df4 = pd.DataFrame(euler, columns=['Roll','Pitch','Yaw'])
 
 #Angular Velocity
 
@@ -169,6 +163,7 @@ angular_acceleration_z = df5[['z']].diff() / 1000 / linear_time_constant
 
 df7 = pd.DataFrame()
 df7 = pd.concat([angular_acceleration_x, angular_acceleration_y, angular_acceleration_z], axis=1)
+df7.loc[0] = pd.Series({'x': 0, 'y': 0, 'z': 0})
 
 #Excluding outliers and interpolating the outliers
 df8 = df7[np.abs(df7 - df7.mean()) <= (2 * df7.std())]
