@@ -165,8 +165,11 @@ df8_interpolated = df8.interpolate()
 
 #Creating the visualization
 
-fig, ((ax1, ax2, ax3, ax4)) = plt.subplots(4, 1)
-fig.tight_layout()
+fig, ((ax1, ax2)) = plt.subplots(2, 1)
+plt.subplots_adjust(left=.125, bottom=.1, right=.9, top=.9, wspace=0.2, hspace=0.5)
+
+fig, ((ax3, ax4)) = plt.subplots(2, 1)
+plt.subplots_adjust(left=.125, bottom=.1, right=.9, top=.9, wspace=0.2, hspace=0.5)
 
 x1 = [0, 173.75, 347.5, 521.25, 695]
 swing = ['0.0', '25%', '50%', '75%', '100%']
