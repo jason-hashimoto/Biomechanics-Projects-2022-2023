@@ -14,7 +14,7 @@ columns = ['Index',
            'x-virtual marker end', 'y-virtual marker end', 'z-virtual marker end',
            'x-virtual marker center', 'y-virtual marker center', 'z-virtual marker center']
 # Read txt file and organize columns
-df = pd.read_csv('/workspaces/Biomechanics-Projects-2022-2023/Bat Data Calculations/Bat_Data.csv', delimiter="\t", skiprows=3, names=columns)
+df = pd.read_csv('C:/Users/OSUsp/Documents/GitHub/Biomechanics-Projects-2022-2023/Bat Data Calculations/Bat_Data.csv', delimiter="\t", skiprows=3, names=columns)
 
 #Figuring out global axis
 
@@ -137,43 +137,82 @@ df4 = pd.DataFrame(euler, columns=['Roll','Pitch','Yaw'])
 euler_rad = np.deg2rad(euler)
 dfrad = pd.DataFrame(euler_rad,columns=['x','y','z'])
 
-angular_velocity_x = dfrad[['x']].diff() / 1000 / linear_time_constant
-angular_velocity_y = dfrad[['y']].diff() / 1000 / linear_time_constant
-angular_velocity_z = dfrad[['z']].diff() / 1000 / linear_time_constant
+angular_velocity_x = dfrad[['x']].diff() / linear_time_constant
+angular_velocity_y = dfrad[['y']].diff() / linear_time_constant
+angular_velocity_z = dfrad[['z']].diff() / linear_time_constant
 
 df5 = pd.DataFrame()
 df5 = pd.concat([angular_velocity_x, angular_velocity_y, angular_velocity_z], axis=1)
 df5.loc[0] = pd.Series({'x': 0, 'y': 0, 'z': 0})
 
 #Excluding outliers and interpolating the outliers
-df6 = df5[np.abs(df5 - df5.mean()) <= (2 * df5.std())]
+df6 = df5[np.abs(df5 - df5.mean()) <= (2.5 * df5.std())]
 df6_interpolated = df6.interpolate()
-
-#Plotting the Angular Velocity
-#df6_interpolated['x'].plot(kind='line')
-#df6_interpolated['y'].plot(kind='line')
-#df6_interpolated['z'].plot(kind='line')
-#plt.show()
 
 #Angular Acceleration
 
-angular_acceleration_x = df5[['x']].diff() / 1000 / linear_time_constant
-angular_acceleration_y = df5[['y']].diff() / 1000 / linear_time_constant
-angular_acceleration_z = df5[['z']].diff() / 1000 / linear_time_constant
+angular_acceleration_x = df5[['x']].diff()
+angular_acceleration_y = df5[['y']].diff()
+angular_acceleration_z = df5[['z']].diff()
 
 df7 = pd.DataFrame()
 df7 = pd.concat([angular_acceleration_x, angular_acceleration_y, angular_acceleration_z], axis=1)
 df7.loc[0] = pd.Series({'x': 0, 'y': 0, 'z': 0})
 
 #Excluding outliers and interpolating the outliers
-df8 = df7[np.abs(df7 - df7.mean()) <= (2 * df7.std())]
+df8 = df7[np.abs(df7 - df7.mean()) <= (.15 * df7.std())]
 df8_interpolated = df8.interpolate()
 
-#Plotting the Angular Acceleration
-#df8_interpolated['x'].plot(kind='line')
-#df8_interpolated['y'].plot(kind='line')
-#df8_interpolated['z'].plot(kind='line')
-#plt.show()
+#Creating the visualization
+
+fig, ((ax1, ax2, ax3, ax4)) = plt.subplots(4, 1)
+fig.tight_layout()
+
+x1 = [0, 173.75, 347.5, 521.25, 695]
+swing = ['0.0', '25%', '50%', '75%', '100%']
+
+#Bat Top Linear Velocity
+ax1.plot(df_velo['x_bat_top_cap_velo'], label='x')
+ax1.plot(df_velo['y_bat_top_cap_velo'], label='y')
+ax1.plot(df_velo['z_bat_top_cap_velo'], label='z')
+ax1.set_ylabel('Linear Velocity (m/s)')
+ax1.set_xticks(x1)
+ax1.set_xticklabels(swing, minor=False,)
+ax1.set_xlabel('% Swing')
+
+#Bat Top Linear Acceleration
+ax2.plot(df_acc['x_bat_top_cap_acc'], label='x')
+ax2.plot(df_acc['y_bat_top_cap_acc'], label='y')
+ax2.plot(df_acc['z_bat_top_cap_acc'], label='z')
+ax2.set_ylabel('Linear Acceleration (m/s)^2')
+ax2.set_xticks(x1)
+ax2.set_xticklabels(swing, minor=False,)
+ax2.set_xlabel('% Swing')
+
+#Angular velocity
+ax3.plot(df6_interpolated['x'], label='x')
+ax3.plot(df6_interpolated['y'], label='y')
+ax3.plot(df6_interpolated['z'], label='z')
+ax3.set_ylabel('Angular Velocity (rad/s)')
+ax3.set_xticks(x1)
+ax3.set_xticklabels(swing, minor=False,)
+ax3.set_xlabel('% Swing')
+
+#Angular Acceleration
+ax4.plot(df8_interpolated['x'], label='x')
+ax4.plot(df8_interpolated['y'], label='y')
+ax4.plot(df8_interpolated['z'], label='z')
+ax4.set_ylabel('Angular Acceleration (rad/s^2)')
+ax4.set_xticks(x1)
+ax4.set_xticklabels(swing, minor=False,)
+ax4.set_xlabel('% Swing')
+
+#Add a legend
+ax1.legend(loc='upper center',bbox_to_anchor=(0.5, 1),ncol=3)
+ax2.legend(loc='upper center',bbox_to_anchor=(0.5, 1),ncol=3)
+ax3.legend(loc='upper center',bbox_to_anchor=(0.5, 1),ncol=3)
+ax4.legend(loc='upper center',bbox_to_anchor=(0.5, 1),ncol=3)
+plt.show()
 
 
 # Using this to display all columns and rows
