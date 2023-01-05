@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as R
+from scipy import stats
 
 # Manually create columns for the txt file
 columns = ['Index',
@@ -13,9 +14,20 @@ columns = ['Index',
            'x-virtual marker end', 'y-virtual marker end', 'z-virtual marker end',
            'x-virtual marker center', 'y-virtual marker center', 'z-virtual marker center']
 # Read txt file and organize columns
-df = pd.read_csv('Bat Data Calculations/Bat_Data.csv', delimiter="\t", skiprows=3, names=columns)
+df = pd.read_csv('C:/Users/OSUsp/Documents/GitHub/Biomechanics-Projects-2022-2023/Bat Data Calculations/Bat_Data.csv', delimiter="\t", skiprows=3, names=columns)
 
-#df.to_csv(r"Bat Data Calculations/Bat_Data.csv", index=None)
+#Figuring out global axis
+
+fig = plt.figure()
+ax = plt.axes(projection='3d')
+ax.plot3D(df['x-bat top cap'], df['y-bat top cap'], df['z-bat top cap'], 'green', label = 'Top Cap')
+ax.plot3D(df['x-bat bottom cap'], df['y-bat bottom cap'], df['z-bat bottom cap'], 'red', label = 'Bottom Cap')
+ax.plot3D(df['x-bat hands'], df['y-bat hands'], df['z-bat hands'], 'blue', label = 'Hands')
+ax.plot3D(df['x-bat handle'], df['y-bat handle'], df['z-bat handle'], 'black', label = 'Handle')
+ax.plot3D(df['x-virtual marker center'], df['y-virtual marker center'], df['z-virtual marker center'], 'orange', label = 'VM Center Bat')
+ax.legend()
+ax.set_zlim(zmin=0)
+#plt.show()
 
 # Bat Tip Linear Velocity:
 
@@ -120,33 +132,54 @@ rmatrix = rotationmatrix.reshape((696,3,3))
 r = R.from_matrix(rmatrix)
 euler = r.as_euler('xyz', degrees=True)
 
-#Euler degrees to radians
-euler_rad = np.deg2rad(euler)
-
-#Time
-time = np.arange(696)
-dt = time[1:] - time[:-1]
-
+#Display euler angles
+df4 = pd.DataFrame(euler, columns=['x','y','z'])
+#df4['z'].plot(kind='line')
+#plt.show()
 
 #Angular Velocity
-angular_velocity = (euler_rad[1:] - euler_rad[:-1]) / dt[:, np.newaxis]
 
-df4 = pd.DataFrame(angular_velocity, columns=['x','y','z'])
-df4['x'].plot(kind='line')
-plt.show()
+#Euler degrees to radians
+euler_rad = np.deg2rad(euler)
+dfrad = pd.DataFrame(euler_rad,columns=['x','y','z'])
 
-#Figuring out global axis
+angular_velocity_x = dfrad[['x']].diff() / 1000 / linear_time_constant
+angular_velocity_y = dfrad[['y']].diff() / 1000 / linear_time_constant
+angular_velocity_z = dfrad[['z']].diff() / 1000 / linear_time_constant
 
-fig = plt.figure()
-ax = plt.axes(projection='3d')
-ax.plot3D(df['x-bat top cap'], df['y-bat top cap'], df['z-bat top cap'], 'green', label = 'Top Cap')
-ax.plot3D(df['x-bat bottom cap'], df['y-bat bottom cap'], df['z-bat bottom cap'], 'red', label = 'Bottom Cap')
-ax.plot3D(df['x-bat hands'], df['y-bat hands'], df['z-bat hands'], 'blue', label = 'Hands')
-ax.plot3D(df['x-bat handle'], df['y-bat handle'], df['z-bat handle'], 'black', label = 'Handle')
-ax.plot3D(df['x-virtual marker center'], df['y-virtual marker center'], df['z-virtual marker center'], 'orange', label = 'VM Center Bat')
-ax.legend()
-ax.set_zlim(zmin=0)
+df5 = pd.DataFrame()
+df5 = pd.concat([angular_velocity_x, angular_velocity_y, angular_velocity_z], axis=1)
+df5.loc[0] = pd.Series({'x': 0, 'y': 0, 'z': 0})
+
+#Excluding outliers and interpolating the outliers
+df6 = df5[np.abs(df5 - df5.mean()) <= (2 * df5.std())]
+df6_interpolated = df6.interpolate()
+
+#Plotting the Angular Velocity
+#df6_interpolated['x'].plot(kind='line')
+#df6_interpolated['y'].plot(kind='line')
+#df6_interpolated['z'].plot(kind='line')
 #plt.show()
+
+#Angular Acceleration
+
+angular_acceleration_x = df5[['x']].diff() / 1000 / linear_time_constant
+angular_acceleration_y = df5[['y']].diff() / 1000 / linear_time_constant
+angular_acceleration_z = df5[['z']].diff() / 1000 / linear_time_constant
+
+df7 = pd.DataFrame()
+df7 = pd.concat([angular_acceleration_x, angular_acceleration_y, angular_acceleration_z], axis=1)
+
+#Excluding outliers and interpolating the outliers
+df8 = df7[np.abs(df7 - df7.mean()) <= (2 * df7.std())]
+df8_interpolated = df8.interpolate()
+
+#Plotting the Angular Acceleration
+#df8_interpolated['x'].plot(kind='line')
+#df8_interpolated['y'].plot(kind='line')
+#df8_interpolated['z'].plot(kind='line')
+#plt.show()
+
 
 # Using this to display all columns and rows
 pd.option_context('display.max_rows', None, 'display.max_columns', None)
