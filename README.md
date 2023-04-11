@@ -1,4 +1,4 @@
-## Biomechanics Projects 2022-2023
+# Biomechanics Projects 2022-2023
 
 This repository contains a collection of projects I've worked on over the past year. Here's a brief description of each:
 
